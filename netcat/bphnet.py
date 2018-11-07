@@ -35,9 +35,6 @@ def usage():
     sys.exit(0)
 
 
-
-
-
 def main():
     global listen
     global port
@@ -46,18 +43,14 @@ def main():
     global upload_destination
     global target
 
-
-
-
     if not len(sys.argv[1:]):
         pass
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hle:t:p:cu:',
-                                   ['help','listen','execute','target','port','command','upload'])
+                                   ['help', 'listen', 'execute', 'target', 'port', 'command', 'upload'])
     except getopt.GetoptError as err:
         print str(err)
         usage()
-
 
     for o, a in opts:
         if o in ('-h', '--help'):
@@ -83,11 +76,43 @@ def main():
     if listen:
         server_loop()
 
+
 def client_sender(buffer):
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        client.connect(target, port)
+
+        if len(buffer):
+            client.send(buffer)
+
+        while (True):
+
+            recv_len = 1
+            response = ''
+
+            while recv_len:
+
+                data = client.recv(4096)
+                recv_len = len(data)
+                response += data
+                if recv_len < 4096:
+                    break
+
+            print response
+
+            buffer = raw_input('')
+            buffer += '\n'
+
+            client.send(buffer)
+    except:
+        print '[*] Exception! Exiting.'
+        client.close()
 
 
+def server_loop():
     pass
 
-def 
 
-
+def client_handler(client_socket):
+    pass
