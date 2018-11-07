@@ -3,6 +3,7 @@ import socket
 import getopt
 import threading
 import subprocess
+import traceback
 
 # define some global variables
 listen = False
@@ -63,7 +64,7 @@ def main():
             command = True
         elif o in ('-u', 'upload'):
             upload_destination = a
-        elif o in ('t', '--target'):
+        elif o in ('-t', '--target'):
             target = a
         elif o in ('-p', '--port'):
             port = a
@@ -72,6 +73,7 @@ def main():
 
     if not listen and len(target) and port > 0:
         buffer = sys.stdin.read()
+        print'hahaha'
         client_sender(buffer)
     if listen:
         server_loop()
@@ -81,7 +83,7 @@ def client_sender(buffer):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        client.connect(target, port)
+        client.connect((target, int(port)))
 
         if len(buffer):
             client.send(buffer)
@@ -105,14 +107,19 @@ def client_sender(buffer):
             buffer += '\n'
 
             client.send(buffer)
-    except:
+    except Exception as e:
+        print e
+        traceback.print_exc()
         print '[*] Exception! Exiting.'
         client.close()
 
 
 def server_loop():
-    pass
+    
 
 
 def client_handler(client_socket):
     pass
+
+
+main()
