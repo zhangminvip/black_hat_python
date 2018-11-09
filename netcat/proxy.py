@@ -38,12 +38,22 @@ def main():
     server_loop(local_host, local_port, remote_host, remote_port, receive_first)
 
 
-
-
-
-
-
-
-
 def proxy_handler(client_socket, remote_host, remote_port,receive_first):
-    pass
+
+    remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    remote_socket.connect((remote_host, remote_port))
+    if receive_first:
+         remote_buffer = receive_from(remote_socket)
+
+def receive_from(connection):
+    buffer = ''
+    connection.settimeout(2)
+    try:
+        while True:
+            data = connection.recv(4096)
+            if not data:
+                break
+            buffer += data
+    except:
+        pass
+    return buffer
